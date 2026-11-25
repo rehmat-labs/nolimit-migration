@@ -122,6 +122,11 @@ class NLWM_Util {
 		) ) ) );
 	}
 
+	/** The "Leave out" switches a backup accepts (backup form, schedule, WP-CLI). */
+	public static function skip_keys() {
+		return array( 'no_media', 'no_themes', 'no_inactive_themes', 'no_plugins', 'no_inactive_plugins', 'no_muplugins', 'no_cache', 'no_database', 'no_spam', 'no_revisions', 'no_transients', 'no_wc_logs' );
+	}
+
 	/** Link to the product website with campaign tags. */
 	public static function site_url( $path = '', $where = 'plugin' ) {
 		$base = defined( 'NLWM_SITE' ) ? NLWM_SITE : 'https://nolimitmigration.com';

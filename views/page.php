@@ -29,7 +29,8 @@ $nlwm_exclude = array(
 	'no_spam'             => array( 'Spam & trashed comments', 'Skip spam and trashed comments' ),
 	'no_revisions'        => array( 'Post revisions', 'Skip old post revisions (often 30–60% of the posts table)' ),
 	'no_transients'       => array( 'Transients', 'Skip temporary cached data stored in the options table' ),
-	'no_media'            => array( 'Media library', 'Skip wp-content/uploads' ),
+	'no_wc_logs'          => array( 'WooCommerce sessions & logs', 'Skip shopper sessions and the history of finished background tasks. Orders, products and customers are kept' ),
+	'no_media'           => array( 'Media library', 'Skip wp-content/uploads' ),
 	'no_themes'           => array( 'All themes', '' ),
 	'no_inactive_themes'  => array( 'Inactive themes', 'Keep only the active theme (and its parent)' ),
 	'no_plugins'          => array( 'All plugins', '' ),
@@ -38,6 +39,10 @@ $nlwm_exclude = array(
 	'no_cache'            => array( 'Cache folders', 'Skip page-cache and builder CSS cache folders (they rebuild themselves)' ),
 	'no_database'         => array( 'Database', 'Files only, no database' ),
 );
+// The WooCommerce switch only makes sense on a shop.
+if ( ! class_exists( 'WooCommerce' ) ) {
+	unset( $nlwm_exclude['no_wc_logs'] );
+}
 ?>
 <div class="wrap nlwm" id="nlwm">
 	<h1 class="screen-reader-text"><?php echo esc_html( $nlwm_brand['name'] ); ?></h1>
@@ -276,7 +281,7 @@ $nlwm_exclude = array(
 					<li><span>Max execution</span><strong><?php echo esc_html( ini_get( 'max_execution_time' ) ? ini_get( 'max_execution_time' ) . ' s' : 'unlimited' ); ?></strong></li>
 					<li><span>Host upload limit</span><strong><?php echo esc_html( ini_get( 'upload_max_filesize' ) ); ?> <em class="nlwm-ok">bypassed</em></strong></li>
 					<li><span>Database</span><strong><?php echo esc_html( isset( $nlwm_db ) ? $nlwm_db->version() : '?' ); ?></strong></li>
-					<li><span>Free disk</span><strong><?php echo esc_html( null === $nlwm_free ? 'unknown' : NLWM_Util::format_bytes( $nlwm_free ) ); ?></strong></li>
+					<li><span>Free disk</span><strong><?php echo esc_html( null === $nlwm_free ? 'not reported by host' : NLWM_Util::format_bytes( $nlwm_free ) ); ?></strong></li>
 					<li><span>Schedule</span><strong><?php echo esc_html( $nlwm_next ? wp_date( 'j M, H:i', $nlwm_next ) : 'off' ); ?></strong></li>
 					<li><span>Cloud storage</span><strong><?php echo esc_html( $nlwm_clouds ? implode( ', ', array_map( function ( $c ) { return $c->label(); }, $nlwm_clouds ) ) : 'not connected' ); ?></strong></li>
 				</ul>

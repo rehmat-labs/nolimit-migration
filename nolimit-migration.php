@@ -3,7 +3,7 @@
  * Plugin Name:       NoLimit Migration
  * Plugin URI:        https://nolimitmigration.com/features
  * Description:       Move, back up and restore a WordPress site in one click. No upload size limit, import from URL, site-to-site transfer links, scheduled backups, safe database swap.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 5.3
  * Requires PHP:      7.2
  * Author:            NoLimit Migration
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NLWM_VERSION', '1.0.0' );
+define( 'NLWM_VERSION', '1.0.1' );
 define( 'NLWM_FILE', __FILE__ );
 define( 'NLWM_DIR', __DIR__ );
 define( 'NLWM_URL', plugin_dir_url( __FILE__ ) );

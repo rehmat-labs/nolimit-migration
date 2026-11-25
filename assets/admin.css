@@ -126,7 +126,9 @@ select.nlwm-input { flex: 0 1 auto; padding-right: 32px; }
 .nlwm-backups { display: flex; flex-direction: column; gap: 10px; }
 .nlwm-b { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; }
 .nlwm-b:hover { border-color: var(--border-strong); }
-.nlwm-b-name { font-weight: 700; word-break: break-all; }
+.nlwm-b-main { min-width: 0; }
+.nlwm-b-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nlwm-b-meta > span { overflow-wrap: anywhere; }
 .nlwm-b-meta { color: var(--subtle); font-size: 13px; display: flex; gap: 12px; flex-wrap: wrap; }
 .nlwm-b-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .nlwm-tag { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }

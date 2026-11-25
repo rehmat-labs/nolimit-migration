@@ -252,7 +252,7 @@
 		modal.open('Restoring site');
 		var chain = Promise.resolve();
 		if ($('#nlwm-safety').checked) {
-			chain = runJob('export', { origin: 'pre-import', label: 'Restore point before ' + name }, 'Safety backup');
+			chain = runJob('export', { origin: 'pre-import', label: 'Before restoring ' + shortName(name) }, 'Safety backup');
 		}
 		chain.then(function () {
 			if (cancelled) { throw new Error('Cancelled.'); }
@@ -343,6 +343,15 @@
 
 	/* ------------------------------------------------------------ backups list */
 
+	var backupLabels = {};
+
+	// A short, readable name for a backup: its label if it has one, else the file name without the
+	// extension, shortened in the middle so it fits on one line.
+	function shortName(name) {
+		var s = backupLabels[name] || String(name).replace(/\.(nolimit|wpress)$/, '');
+		return s.length > 48 ? s.slice(0, 30) + '…' + s.slice(-14) : s;
+	}
+
 	var typeNames = { manual: 'manual', scheduled: 'scheduled', 'pre-import': 'restore point', upload: 'uploaded', url: 'from link', cloud: 'from cloud', drive: 'from cloud' };
 
 	function renderBackups(list) {
@@ -352,9 +361,11 @@
 			box.innerHTML = '<div class="nlwm-empty">No backups yet. <a href="?page=nolimit-migration">Create your first backup</a>.</div>';
 			return;
 		}
+		backupLabels = {};
+		list.forEach(function (b) { if (b.label) { backupLabels[b.name] = b.label; } });
 		box.innerHTML = list.map(function (b) {
 			return '<div class="nlwm-b" data-name="' + esc(b.name) + '">' +
-				'<div><div class="nlwm-b-name">' + esc(b.label || b.name) + '</div>' +
+				'<div class="nlwm-b-main"><div class="nlwm-b-name" title="' + esc(b.label || b.name) + '">' + esc(b.label || b.name) + '</div>' +
 				'<div class="nlwm-b-meta"><span>' + esc(b.created) + '</span><span>' + esc(b.size) + '</span>' +
 				'<span class="nlwm-tag is-' + esc(b.type) + '">' + esc(typeNames[b.type] || b.type) + '</span>' +
 				(b.locked ? '<span class="nlwm-tag is-locked">kept</span>' : '') +

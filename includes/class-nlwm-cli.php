@@ -22,7 +22,7 @@ class NLWM_CLI {
 	 *
 	 * [--exclude=<list>]
 	 * : Comma separated: no_media, no_themes, no_inactive_themes, no_plugins, no_inactive_plugins,
-	 *   no_muplugins, no_cache, no_database, no_spam, no_revisions, no_transients
+	 *   no_muplugins, no_cache, no_database, no_spam, no_revisions, no_transients, no_wc_logs
 	 *
 	 * [--label=<text>]
 	 * : Label shown in the backups list.

@@ -158,13 +158,28 @@ class NLWM_Database {
 		return $out;
 	}
 
+	/**
+	 * Rough size of the data a dump will contain, in bytes (from table statistics, so it is instant).
+	 * Indexes are not dumped, so only the data length counts. Excluded tables are left out.
+	 */
+	public function data_size( array $exclude = array() ) {
+		$tables = array_flip( array_diff( $this->tables(), $exclude ) );
+		$bytes  = 0;
+		foreach ( $this->rows( $this->db->prepare( 'SHOW TABLE STATUS LIKE %s', $this->db->esc_like( $this->prefix ) . '%' ), true ) as $t ) {
+			if ( isset( $t['Name'], $tables[ $t['Name'] ] ) ) {
+				$bytes += (float) $t['Data_length'];
+			}
+		}
+		return $bytes;
+	}
+
 	/* ================================================================ DUMP */
 
 	/**
 	 * Continue dumping into $file.
 	 *
 	 * @param array $state  resume state (by reference)
-	 * @param array $opts   exclude_tables, no_spam, no_revisions, no_transients
+	 * @param array $opts   exclude_tables, no_spam, no_revisions, no_transients, no_wc_logs
 	 * @return bool true when every table is done
 	 */
 	public function dump( $file, array &$state, array $opts, $deadline ) {
@@ -359,6 +374,15 @@ class NLWM_Database {
 		}
 		if ( ! empty( $opts['no_transients'] ) && $table === $p . 'options' ) {
 			$where[] = $this->db->prepare( '`option_name` NOT LIKE %s AND `option_name` NOT LIKE %s', $this->db->esc_like( '_transient_' ) . '%', $this->db->esc_like( '_site_transient_' ) . '%' );
+		}
+		if ( ! empty( $opts['no_wc_logs'] ) ) {
+			// WooCommerce: customer sessions and the history of finished background tasks grow without limit.
+			// The tables themselves are kept (empty), and scheduled tasks that have not run yet are kept too.
+			if ( $table === $p . 'woocommerce_sessions' || $table === $p . 'actionscheduler_logs' ) {
+				$where[] = '1=0';
+			} elseif ( $table === $p . 'actionscheduler_actions' ) {
+				$where[] = "`status` NOT IN ('complete','failed','canceled')";
+			}
 		}
 		return implode( ' AND ', $where );
 	}

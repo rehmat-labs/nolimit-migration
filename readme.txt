@@ -4,7 +4,7 @@ Tags: migration, backup, restore, clone, move site
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.2
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -54,7 +54,7 @@ Prefer someone else does it? We also offer [done-for-you migrations](https://nol
 * One-click backups to a single `.nolimit` file.
 * **Scheduled backups**: twice daily, daily, weekly or monthly, with retention (keep the newest N) and e-mail reports.
 * Labels, "keep forever" lock, download, private expiring transfer links.
-* Leave out what you do not need: media, inactive themes or plugins, cache folders, spam comments, post revisions, transients, chosen tables, files by path or wildcard, files over a size limit.
+* Leave out what you do not need: media, inactive themes or plugins, cache folders, spam comments, post revisions, transients, WooCommerce sessions and task logs, chosen tables, files by path or wildcard, files over a size limit.
 * Backups are stored in a folder that is locked against web access; downloads go through an authenticated, resumable endpoint.
 
 = WP-CLI =
@@ -83,7 +83,15 @@ The plugin itself sets no limit. Uploads are split into pieces smaller than your
 
 = Will I be logged out after a restore? =
 
-Yes. The restored database contains the users of the backed-up site. Log in with a username and password from that site.
+The restored database contains the users and logins of the backed-up site. If you restore a recent backup of the same site, you usually stay signed in. After a migration, or with an older backup, log in with a username and password from the backed-up site.
+
+= Does it work with WooCommerce? =
+
+Yes. Products, variations, orders (including the newer separate order tables, HPOS), customers and coupons are backed up and restored. On a busy shop, tick **WooCommerce sessions & logs** under Leave out to skip shopper sessions and the history of finished background tasks, which can grow to hundreds of MB. Orders, products and customers are always kept.
+
+= Do I have to keep the browser tab open? =
+
+For a backup or restore you start by hand, yes: the page drives the job in short steps, which is what keeps it working on hosts with tight time limits. If the tab reloads or reopens within a few minutes, the job continues where it stopped. Scheduled backups and WP-CLI run on the server and need no browser.
 
 = What happens if a restore fails halfway? =
 
@@ -113,6 +121,13 @@ No data is sent anywhere otherwise. There is no tracking.
 4. Scheduled backups with retention and e-mail reports.
 
 == Changelog ==
+
+= 1.0.1 =
+* New: "WooCommerce sessions & logs" option under Leave out (shown on WooCommerce sites). It skips shopper sessions and finished background-task history; orders, products and customers are always kept.
+* Improved: the disk space check now counts the database too, and tells you how much space the backup needs before anything big is written.
+* Improved: the server check says "not reported by host" when the host hides free disk space.
+* Improved: long backup names stay on one line in the Backups list, and restore points get short names.
+* Readme: corrected the answer about being logged out after a restore; new answers about WooCommerce and keeping the tab open.
 
 = 1.0.0 =
 * First release.

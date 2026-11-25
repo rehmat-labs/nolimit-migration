@@ -162,7 +162,7 @@ class NLWM_Admin {
 	protected static function clean_opts( $type, array $raw ) {
 		$out = array();
 		if ( 'export' === $type ) {
-			foreach ( array( 'no_media', 'no_themes', 'no_inactive_themes', 'no_plugins', 'no_inactive_plugins', 'no_muplugins', 'no_cache', 'no_database', 'no_spam', 'no_revisions', 'no_transients' ) as $k ) {
+			foreach ( NLWM_Util::skip_keys() as $k ) {
 				if ( ! empty( $raw[ $k ] ) ) {
 					$out[ $k ] = 1;
 				}
@@ -431,7 +431,7 @@ class NLWM_Admin {
 
 	public static function ajax_settings() {
 		self::guard( 'manage_options' );
-		$allowed = array( 'no_media', 'no_themes', 'no_inactive_themes', 'no_plugins', 'no_inactive_plugins', 'no_muplugins', 'no_cache', 'no_spam', 'no_revisions', 'no_transients' );
+		$allowed = array_values( array_diff( NLWM_Util::skip_keys(), array( 'no_database' ) ) );
 		$freq    = sanitize_key( self::post( 'schedule', 'off' ) );
 		$time    = preg_match( '/^\d{2}:\d{2}$/', (string) self::post( 'schedule_time' ) ) ? self::post( 'schedule_time' ) : '03:00';
 		$s       = array(

@@ -4,7 +4,7 @@
  *
  * Options (all optional):
  *   no_media, no_themes, no_inactive_themes, no_plugins, no_inactive_plugins, no_muplugins, no_cache,
- *   no_database, no_spam, no_revisions, no_transients, exclude_tables[], exclude_paths, max_file_mb,
+ *   no_database, no_spam, no_revisions, no_transients, no_wc_logs, exclude_tables[], exclude_paths, max_file_mb,
  *   replace[] (array of [old,new] applied when the backup is imported), label, origin (manual|scheduled|pre-import)
  */
 
@@ -63,9 +63,23 @@ class NLWM_Export {
 		NLWM_Job::message( $job, sprintf( 'Listing files… %s files (%s)', number_format_i18n( $state['files'] ), NLWM_Util::format_bytes( $state['bytes'] ) ), $done ? 1 : 0.5 );
 		if ( $done ) {
 			NLWM_Job::log( $job, sprintf( 'Found %d files, %s.%s', $state['files'], NLWM_Util::format_bytes( $state['bytes'] ), $state['skipped'] ? ' Skipped ' . $state['skipped'] . ' files over the size limit.' : '' ) );
+			// Check the space before anything big is written. The database dump exists twice for a while:
+			// the temporary .sql file, plus its compressed copy inside the backup (SQL shrinks a lot).
+			$db_bytes = 0;
+			if ( empty( $job['opts']['no_database'] ) ) {
+				try {
+					$db       = new NLWM_Database();
+					$db_bytes = $db->data_size( isset( $job['opts']['exclude_tables'] ) ? (array) $job['opts']['exclude_tables'] : array() );
+				} catch ( Exception $e ) {
+					$db_bytes = 0;
+				}
+			}
+			$need = ( $state['bytes'] + 1.25 * $db_bytes ) * 1.05;
 			$free = NLWM_Util::free_space( NLWM_Util::backups_dir() );
-			if ( null !== $free && $free < $state['bytes'] * 1.05 ) {
-				throw new NLWM_Exception( esc_html( sprintf( 'Not enough disk space: the backup needs about %s, but only %s is free.', NLWM_Util::format_bytes( $state['bytes'] ), NLWM_Util::format_bytes( $free ) ) ) );
+			if ( null === $free ) {
+				NLWM_Job::log( $job, sprintf( 'This host does not report free disk space. The backup needs about %s.', NLWM_Util::format_bytes( $need ) ) );
+			} elseif ( $free < $need ) {
+				throw new NLWM_Exception( esc_html( sprintf( 'Not enough disk space: this backup needs about %1$s (files %2$s, database %3$s), but only %4$s is free. Free up space, or leave out media or large files under Advanced options.', NLWM_Util::format_bytes( $need ), NLWM_Util::format_bytes( $state['bytes'] ), NLWM_Util::format_bytes( $db_bytes ), NLWM_Util::format_bytes( $free ) ) ) );
 			}
 		}
 		return $done;
@@ -132,7 +146,7 @@ class NLWM_Export {
 			'has_db'      => empty( $opt['no_database'] ),
 			'files'       => isset( $job['data']['scan']['files'] ) ? $job['data']['scan']['files'] : 0,
 			'files_bytes' => isset( $job['data']['scan']['bytes'] ) ? $job['data']['scan']['bytes'] : 0,
-			'options'     => array_intersect_key( $opt, array_flip( array( 'no_media', 'no_themes', 'no_inactive_themes', 'no_plugins', 'no_inactive_plugins', 'no_muplugins', 'no_cache', 'no_database', 'no_spam', 'no_revisions', 'no_transients' ) ) ),
+			'options'     => array_intersect_key( $opt, array_flip( NLWM_Util::skip_keys() ) ),
 			'replace'     => $replace,
 			'label'       => isset( $opt['label'] ) ? (string) $opt['label'] : '',
 			'encrypted'   => ! empty( $opt['encrypt'] ),
